@@ -45,6 +45,9 @@ server.tool(
       .enum([
         "get_projects",
         "get_project",
+        "create_project",
+        "update_project",
+        "delete_project",
         "get_boards",
         "create_board",
         "get_board",
@@ -93,6 +96,27 @@ server.tool(
       case "get_project":
         if (!args.id) throw new Error("id is required for get_project action");
         result = await projects.getProject(args.id);
+        break;
+
+      case "create_project":
+        if (!args.name)
+          throw new Error("name is required for create_project action");
+        result = await projects.createProject({ name: args.name });
+        break;
+
+      case "update_project":
+        if (!args.id)
+          throw new Error("id is required for update_project action");
+        result = await projects.updateProject({
+          id: args.id,
+          name: args.name,
+        });
+        break;
+
+      case "delete_project":
+        if (!args.id)
+          throw new Error("id is required for delete_project action");
+        result = await projects.deleteProject(args.id);
         break;
 
       case "get_boards":
