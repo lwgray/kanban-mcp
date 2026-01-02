@@ -2,7 +2,7 @@ import { z } from "zod";
 import { getCard } from "../operations/cards.js";
 import { getTasks } from "../operations/tasks.js";
 import { getComments } from "../operations/comments.js";
-import { getLabels } from "../operations/labels.js";
+import { getLabels, getCardLabelIds } from "../operations/labels.js";
 import { getProjects } from "../operations/projects.js";
 import { getBoards } from "../operations/boards.js";
 import { getLists } from "../operations/lists.js";
@@ -84,12 +84,16 @@ export async function getCardDetails(params: GetCardDetailsParams) {
             throw new Error(`Could not determine board ID for card ${cardId}`);
         }
 
-        const labels = await getLabels(boardId);
+        // Get all board labels
+        const allLabels = await getLabels(boardId);
+
+        // Get the labelIds assigned to this specific card
+        const assignedLabelIds = await getCardLabelIds(cardId);
 
         // Filter to just the labels assigned to this card
-        // Note: We need to get the labelIds from the card's data
-        // This might require additional API calls or data structure knowledge
-        // For now, we'll return all labels for the board
+        const labels = allLabels.filter((label: any) =>
+            assignedLabelIds.includes(label.id)
+        );
 
         // Calculate task completion percentage
         const completedTasks = tasks.filter((task: any) =>
