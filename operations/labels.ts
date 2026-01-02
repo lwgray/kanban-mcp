@@ -330,3 +330,44 @@ export async function removeLabelFromCard(cardId: string, labelId: string) {
         );
     }
 }
+
+/**
+ * Gets the labelIds assigned to a specific card
+ *
+ * @param {string} cardId - The ID of the card to get labels for
+ * @returns {Promise<string[]>} Array of label IDs assigned to the card
+ */
+export async function getCardLabelIds(cardId: string): Promise<string[]> {
+    try {
+        // Get the card details which includes cardLabels in the included section
+        const response = await plankaRequest(`/api/cards/${cardId}`);
+
+        // Check if the response has cardLabels in the included property
+        if (
+            response &&
+            typeof response === "object" &&
+            "included" in response &&
+            response.included &&
+            typeof response.included === "object" &&
+            "cardLabels" in (response.included as Record<string, unknown>)
+        ) {
+            // Get the cardLabels from the included property
+            const cardLabels =
+                (response.included as Record<string, unknown>).cardLabels;
+            if (Array.isArray(cardLabels)) {
+                // Extract labelIds from cardLabels array
+                // cardLabels is array of {id, cardId, labelId, createdAt, updatedAt}
+                return cardLabels
+                    .filter((cl: any) => cl && typeof cl === "object" && "labelId" in cl)
+                    .map((cl: any) => cl.labelId as string);
+            }
+        }
+
+        // If we can't find cardLabels in the expected format, return empty array
+        return [];
+    } catch (error) {
+        // If there's an error, return an empty array
+        console.error(`Error getting card labels for card ${cardId}:`, error);
+        return [];
+    }
+}
